@@ -4,14 +4,39 @@ xmlns="http://java.sun.com/xml/ns/javaee"
 xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+
+
+
 	<servlet>
 		<servlet-name>WordsSaver</servlet-name>
 		<servlet-class>servlets.WordsSaver</servlet-class>
 	</servlet>
+	
+	<servlet>
+		<servlet-name>PostersServlet</servlet-name>
+		<servlet-class>servlets.PostersServlet</servlet-class>
+	</servlet>
+	
+	
+	
+	
+	
+	<servlet-mapping>
+		<servlet-name>PostersServlet</servlet-name>
+		<url-pattern>/api/posters/*</url-pattern>
+	</servlet-mapping>
+	
 	<servlet-mapping>
 		<servlet-name>WordsSaver</servlet-name>
-		<url-pattern>/api/words</url-pattern>
+		<url-pattern>/api/words/*</url-pattern>
 	</servlet-mapping>
+	
+	
+	
+	
+	
+	
+	
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>

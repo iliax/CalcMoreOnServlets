@@ -35,19 +35,25 @@ public class WordsSaver  extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) 
 			throws IOException {
 		
-		resp.setContentType("application/json");
+		resp.setContentType("application/json"); 
 		
 		String jsonResult = null;
-		try{
-			jsonResult = new Gson().toJson( datastore.prepare(new Query("WordCountPair"))
-	                .asList(FetchOptions.Builder.withDefaults()));
-		} catch(RuntimeException exception){
-			resp.setStatus(500);
-			resp.getWriter().print(new Gson().toJson(new ParameterError()));
-            return;
+		
+		if((req.getPathInfo() != null) && (req.getPathInfo().equals("/count"))){
+			jsonResult = datastore.prepare(new Query("WordCountPair"))
+	                .asList(FetchOptions.Builder.withDefaults()).size() + "";
+		}
+		else {	
+			try {
+				jsonResult = new Gson().toJson( datastore.prepare(new Query("WordCountPair"))
+		                .asList(FetchOptions.Builder.withDefaults()));
+			} catch(RuntimeException exception){
+				sendError(resp, 500, "error while retriving words list");
+	            return;
+			}
 		}
 		
-		resp.getWriter().print(jsonResult);
+		resp.getWriter().println(jsonResult);
 
 	}
 	
@@ -60,7 +66,7 @@ public class WordsSaver  extends HttpServlet {
 		try {
 			clearWordsDB();
 		} catch(Exception e){
-			resp.getWriter().print(new Gson().toJson(new SuccessResult("not deleted!", 500)));
+			resp.getWriter().print(new Gson().toJson(new ErrorResult("not deleted!", 500)));
 		}
 
 		resp.getWriter().print(new Gson().toJson(new SuccessResult("deleted!", 200)));
@@ -88,8 +94,7 @@ public class WordsSaver  extends HttpServlet {
 		try {
 			countPair=new Gson().fromJson(jsonReqBuffer.toString(), JsonWordCountPair.class);
 		} catch(Exception e){
-			resp.setStatus(500);
-			resp.getWriter().print(new Gson().toJson(new ParameterError()));
+			sendError(resp, 500);
             return;
 		}
 		
@@ -97,13 +102,26 @@ public class WordsSaver  extends HttpServlet {
 			saveOrUpdateWord(countPair.getWord(), countPair.getCount());
 		} catch(RuntimeException e){
 			log.warning("err while saving word");
-			resp.setStatus(500);
-			resp.getWriter().print(new Gson().toJson(new ParameterError("error while saving word",500)));
+			sendError(resp, 500, "error while saving word");
 			throw e;
 		}
 		
 		resp.getWriter().print(new Gson().toJson(new SuccessResult()));
 	}
+	
+	
+	
+	private void sendError(HttpServletResponse resp , int code , String mess) throws IOException{
+		resp.setStatus(code);
+		resp.getWriter().print(new Gson().toJson(new ErrorResult(mess,code)));
+	}
+	
+	private void sendError(HttpServletResponse resp, int code) throws IOException{
+		resp.setStatus(code);
+		resp.getWriter().print(new Gson().toJson(new ErrorResult(code)));
+	}
+	
+	
 	
     @SuppressWarnings("unused")
 	private void printDB(){
